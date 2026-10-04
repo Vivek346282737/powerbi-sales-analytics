@@ -1,0 +1,25 @@
+table State
+	lineageTag: b7e8ce49-dc31-45f2-bc82-19c7a2332081
+
+	column state_name
+		dataType: string
+		lineageTag: 84367728-7983-45fe-a11c-34582e221061
+		summarizeBy: none
+		sourceColumn: state_name
+
+	column region
+		dataType: string
+		lineageTag: 8a45989f-7812-4e54-9792-546c9ae787e1
+		summarizeBy: none
+		sourceColumn: region
+
+	partition State = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\1itdv\Desktop\powerbi-sales-analytics\data\dim_state.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"state_name", type text}, {"region", type text}}, "en-US")
+				in
+				    Typed
+

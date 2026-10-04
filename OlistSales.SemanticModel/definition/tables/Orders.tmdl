@@ -1,0 +1,139 @@
+table Orders
+	lineageTag: 00472681-d242-40a4-adb2-8144463bf7f1
+
+	measure 'Total Revenue' = SUM(Orders[order_value])
+		formatString: #,0
+		lineageTag: 1b9ca110-a06e-46e0-814c-150576e18473
+
+	measure 'Total Orders' = COUNTROWS(Orders)
+		formatString: #,0
+		lineageTag: 8261ba4d-6f31-44b9-90e6-599b59abceca
+
+	measure 'Avg Order Value' = DIVIDE([Total Revenue], [Total Orders])
+		formatString: #,0.00
+		lineageTag: 2c2bbe99-8c3b-41ff-bd74-42ff71d9eda6
+
+	measure 'Avg Review Score' = AVERAGE(Orders[review_score])
+		formatString: 0.00
+		lineageTag: 8803c70b-5e05-43fb-853f-d7f6d84df804
+
+	measure 'Avg Delivery Days' = AVERAGE(Orders[delivery_days])
+		formatString: 0.0
+		lineageTag: 48cba5c8-718b-4db4-917f-6d476b3cd0bd
+
+	measure 'Late Orders' = CALCULATE([Total Orders], Orders[delivery_status] = "Late")
+		formatString: #,0
+		lineageTag: 7aa5905d-210e-4ebd-8bf1-bcc5e3bc47dd
+
+	measure 'Late Delivery %' = DIVIDE([Late Orders], [Total Orders])
+		formatString: 0.0%
+		lineageTag: 96f5e6d6-8003-42f1-9496-4dd7072733ee
+
+	measure 'Repeat Customer Orders %' = DIVIDE(CALCULATE([Total Orders], Orders[customer_type] = "Repeat"), [Total Orders])
+		formatString: 0.0%
+		lineageTag: 53c07a26-6526-40a9-a48c-ba61fdf4088f
+
+	measure 'Revenue Previous Month' = CALCULATE([Total Revenue], DATEADD('Date'[Date], -1, MONTH))
+		formatString: #,0
+		lineageTag: d8b84774-1d9e-4afb-8e3c-2d8632ecfb78
+
+	measure 'MoM Growth %' = DIVIDE([Total Revenue] - [Revenue Previous Month], [Revenue Previous Month])
+		formatString: 0.0%
+		lineageTag: d40ca01f-da71-4ed1-acea-0886e2223847
+
+	measure 'Revenue YTD' = TOTALYTD([Total Revenue], 'Date'[Date])
+		formatString: #,0
+		lineageTag: c2c5f980-b5b7-4cff-ab56-aadee1a8a7cb
+
+	measure 'Revenue Share %' = DIVIDE([Total Revenue], CALCULATE([Total Revenue], ALLSELECTED(Orders)))
+		formatString: 0.0%
+		lineageTag: c778a5fd-f511-49fb-b3cb-51c19cab4dca
+
+	measure 'Category Rank' = RANKX(ALL(Orders[category]), [Total Revenue], , DESC, Dense)
+		formatString: 0
+		lineageTag: 050cd218-443b-4d56-bda4-c313a6ce6ed8
+
+	measure 'Bad Review %' = DIVIDE(CALCULATE([Total Orders], Orders[review_score] <= 2), CALCULATE([Total Orders], NOT ISBLANK(Orders[review_score])))
+		formatString: 0.0%
+		lineageTag: 15452ecf-8ef8-4fe4-9849-cf40d1fc2c65
+
+	column order_date
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 2674baef-d91d-40ff-931b-996b765ee8b1
+		summarizeBy: none
+		sourceColumn: order_date
+
+	column state
+		dataType: string
+		lineageTag: 8ed65aed-ca78-4987-835c-8ca692a04105
+		summarizeBy: none
+		sourceColumn: state
+
+	column category
+		dataType: string
+		lineageTag: 2ca5f8e9-1b50-44f9-9fd7-ca450ebc35e7
+		summarizeBy: none
+		sourceColumn: category
+
+	column order_value
+		dataType: double
+		lineageTag: 5682a261-7047-453f-ae26-e8c659dda1cf
+		summarizeBy: sum
+		sourceColumn: order_value
+
+	column payment_type
+		dataType: string
+		lineageTag: 22417d18-3086-4f42-92eb-c167a22e2441
+		summarizeBy: none
+		sourceColumn: payment_type
+
+	column delivery_days
+		dataType: int64
+		lineageTag: a8fab511-defd-41d3-8b5e-85d3a20285c7
+		summarizeBy: none
+		sourceColumn: delivery_days
+
+	column delivery_status
+		dataType: string
+		lineageTag: 514b7ce9-5345-4a31-a075-2648d6a78c51
+		summarizeBy: none
+		sourceColumn: delivery_status
+
+	column review_score
+		dataType: double
+		lineageTag: e4ca2d31-f5cb-4f98-9224-85951131db04
+		summarizeBy: none
+		sourceColumn: review_score
+
+	column customer_type
+		dataType: string
+		lineageTag: c6a6e055-e8bc-4c74-a720-dbd615939347
+		summarizeBy: none
+		sourceColumn: customer_type
+
+	column late_flag
+		dataType: int64
+		lineageTag: 37be2427-0554-47cf-9288-d7b752dff011
+		summarizeBy: none
+		sourceColumn: late_flag
+
+	column delivery_bucket
+		dataType: string
+		lineageTag: 561667b6-036e-4a08-9a16-11b863d4efbc
+		summarizeBy: none
+		sourceColumn: delivery_bucket
+
+	partition Orders = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\1itdv\Desktop\powerbi-sales-analytics\data\fact_orders.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    RemovedCountry = Table.RemoveColumns(Promoted, {"country"}),
+				    Typed = Table.TransformColumnTypes(RemovedCountry, {{"order_date", type date}, {"state", type text}, {"category", type text}, {"order_value", type number}, {"payment_type", type text}, {"delivery_days", Int64.Type}, {"delivery_status", type text}, {"review_score", type number}, {"customer_type", type text}, {"late_flag", Int64.Type}}, "en-US"),
+				    Cleaned = Table.SelectRows(Typed, each [order_value] <> null and [order_value] > 0),
+				    AddedBucket = Table.AddColumn(Cleaned, "delivery_bucket", each if [delivery_days] <= 7 then "1. 0-7 days" else if [delivery_days] <= 14 then "2. 8-14 days" else if [delivery_days] <= 21 then "3. 15-21 days" else "4. 22+ days", type text)
+				in
+				    AddedBucket
+

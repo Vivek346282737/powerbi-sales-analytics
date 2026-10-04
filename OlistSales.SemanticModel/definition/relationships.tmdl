@@ -1,0 +1,8 @@
+relationship orders_date
+	fromColumn: Orders.order_date
+	toColumn: Date.Date
+
+relationship orders_state
+	fromColumn: Orders.state
+	toColumn: State.state_name
+

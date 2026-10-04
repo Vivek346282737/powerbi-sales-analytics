@@ -1,0 +1,59 @@
+table Date
+	lineageTag: 96565f53-1565-4792-9bc3-4a7874cee27c
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: Short Date
+		lineageTag: 0bb2e906-a9b4-4400-b07e-53a3faf4ef21
+		summarizeBy: none
+		sourceColumn: Date
+
+	column Year
+		dataType: int64
+		lineageTag: d3943168-74c8-4510-a985-bbb238df76bd
+		summarizeBy: none
+		sourceColumn: Year
+
+	column Quarter
+		dataType: string
+		lineageTag: 488aec42-6fe9-4ef1-a996-1c5f839224c5
+		summarizeBy: none
+		sourceColumn: Quarter
+
+	column 'Month Number'
+		dataType: int64
+		lineageTag: f9c21aa4-49ef-4f67-aaba-2ac73000201d
+		summarizeBy: none
+		sourceColumn: Month Number
+
+	column 'Month Name'
+		dataType: string
+		lineageTag: df474c34-d3ed-4308-b801-2f852e732cd9
+		summarizeBy: none
+		sourceColumn: Month Name
+
+	column 'Month Start'
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: f82bfa36-ee47-46d8-b231-f171659729d9
+		summarizeBy: none
+		sourceColumn: Month Start
+
+	column Weekday
+		dataType: string
+		lineageTag: 35c99544-1878-4cb8-91ef-3e5394e79d86
+		summarizeBy: none
+		sourceColumn: Weekday
+
+	partition Date = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\1itdv\Desktop\powerbi-sales-analytics\data\dim_date.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"Date", type date}, {"Year", Int64.Type}, {"Quarter", type text}, {"Month Number", Int64.Type}, {"Month Name", type text}, {"Month Start", type date}, {"Weekday", type text}}, "en-US")
+				in
+				    Typed
+

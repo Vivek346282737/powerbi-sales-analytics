@@ -1,5 +1,7 @@
 # Power BI Sales & Delivery Report (Olist)
 
+![Power BI](https://img.shields.io/badge/Power%20BI-F2C811?style=flat-square) ![DAX](https://img.shields.io/badge/DAX-F2C811?style=flat-square) ![Power Query](https://img.shields.io/badge/Power%20Query-217346?style=flat-square) ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square)
+
 A two-page Power BI report on 96K e-commerce orders, built on a star-schema model with
 **Power Query** transformations and **14 DAX measures**.
 
@@ -67,3 +69,7 @@ The Power Query source path in the project files points to a local folder; updat
 Transform data > Data source settings if you refresh the `.pbip` on another machine.
 
 Data: Brazilian E-Commerce Public Dataset by Olist (CC BY-NC-SA 4.0).
+
+## Author
+
+**Vivek Prasad** - [LinkedIn](https://www.linkedin.com/in/prasadvivek123) | [GitHub](https://github.com/Vivek346282737) | [Tableau Public](https://public.tableau.com/app/profile/vivek.prasad5963)
